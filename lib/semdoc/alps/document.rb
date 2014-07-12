@@ -32,6 +32,11 @@ module Semdoc
         traverse(@data, descriptor, include_obj).compact
       end
 
+      def first_item_for(descriptor_fqid, include_obj = true)
+        items_for(descriptor_fqid, include_obj).first
+      end
+      alias item_for first_item_for
+
       def possible_descriptors
         @origin_descriptor ? @origin_descriptor.subdescriptors : @possible_descriptors
       end
