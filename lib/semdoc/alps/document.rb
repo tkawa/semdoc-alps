@@ -37,6 +37,18 @@ module Semdoc
       end
       alias item_for first_item_for
 
+      def links_for(descriptor_fqid)
+        # semanticとlinkを分ける必要あるかもしれないけど、呼ぶまでどちらかわからないのだからやっぱり統合すべきかも
+        descriptor = DescriptorStore.lookup(complete_fqid(descriptor_fqid)) # TODO: complete_fqid はデフォルトでIANAを補完
+        items = traverse(@data, descriptor, false).compact
+        items.map{|item| item.is_a?(String) ? LinkedPoint.new(item) : item }
+      end
+
+      def first_link_for(descriptor_fqid)
+        links_for(descriptor_fqid).first
+      end
+      alias link_for first_link_for
+
       def possible_descriptors
         @origin_descriptor ? @origin_descriptor.subdescriptors : @possible_descriptors
       end
