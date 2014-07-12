@@ -24,7 +24,7 @@ module Semdoc
             @possible_descriptors << DescriptorStore.define_leaf_descriptor(data_descriptor, profile_url, @url)
           end
         end
-        @profile_urls << profile_url
+        @profile_urls << profile_url # TODO: 実はprofile_urlに意味はなく、適用済みdescriptorのfqidsを保存すべき
       end
 
       def items_for(descriptor_fqid, include_obj = true)
@@ -41,7 +41,7 @@ module Semdoc
         # semanticとlinkを分ける必要あるかもしれないけど、呼ぶまでどちらかわからないのだからやっぱり統合すべきかも
         descriptor = DescriptorStore.lookup(complete_fqid(descriptor_fqid)) # TODO: complete_fqid はデフォルトでIANAを補完
         items = traverse(@data, descriptor, false).compact
-        items.map{|item| item.is_a?(String) ? LinkedPoint.new(item) : item }
+        items.map{|item| item.is_a?(String) && item.respond_to?(:descriptor) ? LinkedPoint.new(item, item.descriptor) : item }
       end
 
       def first_link_for(descriptor_fqid)
@@ -78,7 +78,8 @@ module Semdoc
               if include_obj
                 wrap(value, DescriptorStore.lookup(complete_fqid(fqid)))
               elsif !(value.is_a?(Array) || value.is_a?(Hash))
-                value
+                # value
+                wrap(value, DescriptorStore.lookup(complete_fqid(fqid)))
               else
                 nil
               end
@@ -101,6 +102,8 @@ module Semdoc
           when Hash
             self.class.new(node, @url, descriptor)
           else
+            node.extend(ValueWithDescriptor) # TODO: improve
+            node.descriptor = descriptor
             node
           end
         end
@@ -114,6 +117,10 @@ module Semdoc
             fqid
           end
         end
+    end
+
+    module ValueWithDescriptor
+      attr_accessor :descriptor
     end
   end
 end
@@ -130,3 +137,9 @@ end
 #
 # doc = Semdoc::Alps::Document.load('http://localhost:3000/timeline.json')
 # doc.apply_profile('http://localhost:3000/status-alps.json')
+#
+# doc = Semdoc::Alps::Document.load('https://api.github.com/users/tkawa/followers')
+# doc.apply_profile('http://localhost:3000/github-user-alps.json')
+# users = doc.items_for("http://alps.io/schema.org/Person#Person")
+# u1_doc = users.first.link_for("http://alps.io/iana/relations#self")
+# u1 = u1_doc.item_for("http://alps.io/schema.org/Person#Person")

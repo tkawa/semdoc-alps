@@ -3,10 +3,11 @@ module Semdoc
     class Descriptor
       attr_reader :namespace, :parent, :children, :subdescriptors
 
-      def initialize(namespace: '', short_id: nil, type: nil, parent: nil, children: [])
+      def initialize(namespace: '', short_id: nil, type: nil, rt: nil, parent: nil, children: [])
         @namespace = namespace
         @short_id = short_id
         @type = type
+        @rt = rt
         set_parent(parent)
         @children = children
         @subdescriptors = []
@@ -58,8 +59,16 @@ module Semdoc
         "#{namespace}##{short_id}"
       end
 
+      def type
+        @type || @parent.try(:type)
+      end
+
+      def rt
+        @rt || @parent.try(:rt)
+      end
+
       def inspect
-        show_variable_name = %w(@namespace @short_id @type)
+        show_variable_name = %w(@namespace @short_id @type @rt)
         variables_inspect = show_variable_name.map{|n| "#{n}=#{instance_variable_get(n).inspect}" }.join(' ')
         "#<#{self.class}:#{__id__} #{variables_inspect}>"
       end

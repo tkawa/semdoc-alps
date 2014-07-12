@@ -86,7 +86,8 @@ module Semdoc
         parent = lookup(data['href']) if data['href']
         short_id = data['id']
         type = data['type']
-        descriptor = Descriptor.new(namespace: namespace, short_id: short_id, type: type, parent: parent)
+        rt = data['rt']
+        descriptor = Descriptor.new(namespace: namespace, short_id: short_id, type: type, rt: rt, parent: parent)
         # subdescriptorの自動継承は設計がまずいのでひとまず無効に
         # if parent
         #   parent.subdescriptors.each do |parent_subdescriptor|
