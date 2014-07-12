@@ -102,7 +102,7 @@ module Semdoc
       end
 
       def self.parse(document_url)
-        return if @@document[document_url]
+        return @@document[document_url] if @@document[document_url]
         body = fetch_document(document_url)
         if alps = body['alps']
           descriptors = Array.wrap(alps['descriptor']).map do |data_descriptor|
