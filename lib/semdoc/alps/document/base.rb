@@ -7,19 +7,26 @@ module Semdoc
         def initialize(data, url, origin_descriptor = nil)
           @data = data
           @url = url
-          @origin_descriptor = origin_descriptor
+          @origin_descriptor = origin_descriptor # TODO: 複数個の可能性も
           @possible_descriptors = []
           @profile_urls = []
         end
 
-        def apply_profile(profile_url)
-          # DescriptorStore.define_profile(profile_url, @url)
-          if alps = DescriptorStore.parse(profile_url) # TODO: profile definitionのキャッシュ
+        def apply_profile(profile_url, as_root: false)
+          profile_url = resolve_alps_url(profile_url)
+          puts "Already applied: #{profile_url}" and return if @profile_urls.include?(profile_url)
+          puts "Apply#{' as root' if as_root}: #{profile_url}"
+          if alps = DescriptorStore.parse(profile_url)
             Array.wrap(alps['descriptor']).each do |data_descriptor|
-              @possible_descriptors << DescriptorStore.define_leaf_descriptor(data_descriptor, profile_url, @url)
+              leaf_descriptor = DescriptorStore.define_leaf_descriptor(data_descriptor, profile_url, @url)
+              if as_root
+                @origin_descriptor = leaf_descriptor # 複数個あるとまずい
+              else
+                @possible_descriptors << leaf_descriptor
+              end
             end
           end
-          @profile_urls << profile_url # TODO: 実はprofile_urlに意味はなく、適用済みdescriptorのfqidsを保存すべき
+          @profile_urls << profile_url # TODO: 実はprofile_urlの保存よりも、適用済みdescriptorのfqidsを保存すべき
         end
 
         def items_for(descriptor_fqid, include_obj = true)
@@ -115,6 +122,17 @@ module Semdoc
             else
               fqid
             end
+          end
+
+          # 相対パス解決、ALPSの提供するURLに読み替える
+          def resolve_alps_url(url)
+            absolute_url =
+              if URI.parse(url).absolute?
+                url
+              else
+                (URI.parse(@url) + url).to_s
+              end
+            absolute_url.sub(%r|^http://schema\.org/|, 'http://alps.io/schema.org/')
           end
       end
     end

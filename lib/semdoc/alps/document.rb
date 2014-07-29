@@ -6,6 +6,7 @@ module Semdoc
     module Document
       def self.load(url, supposed_mime_type = :json)
         body = DescriptorStore.fetch_document(url)
+        # TODO: Linkヘッダからprofileを適用
         case supposed_mime_type
         when :json
           body = { 'root' => body } # plain JSON向け対処
@@ -13,7 +14,19 @@ module Semdoc
         when :jsonhal, :xmlhal
           json = MultiJson.dump(body) # FIXME: 手抜き
           resource = Halibut::Adapter::JSON.parse(json)
-          self::Hal.new(resource, url)
+          self::Hal.new(resource, url).tap do |doc|
+            if links = resource.links['profile']
+              links.each do |link|
+                doc.apply_profile(link.href)
+              end
+            end
+            # typeが複数ある場合たぶんうまくいかない
+            if links = resource.links['type']
+              links.each do |link|
+                doc.apply_profile(link.href, as_root: true)
+              end
+            end
+          end
         else
           raise NotImplementedError, supposed_mime_type
         end

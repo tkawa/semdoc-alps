@@ -13,6 +13,8 @@ module Semdoc
           faraday.adapter Faraday.default_adapter
         end
 
+      # Example:
+      # ab = DescriptorStore.lookup('http://alps.io/schema.org/BlogPosting#articleBody')
       def self.lookup(fqid)
         namespace, fragment = fqid.split('#')
         parse(namespace) unless @@store[fqid] # TODO: わかりやすく
@@ -148,6 +150,3 @@ module Semdoc
     end
   end
 end
-
-# Example:
-# ab = DescriptorStore.lookup('http://alps.io/schema.org/BlogPosting#articleBody')
