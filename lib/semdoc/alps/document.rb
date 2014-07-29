@@ -124,22 +124,3 @@ module Semdoc
     end
   end
 end
-
-# Example:
-# doc = Semdoc::Alps::Document.load('file:///Users/tkawa/Projects/alps-sample/public/status.json')
-# doc.apply_profile('file:///Users/tkawa/Projects/alps-sample/public/status-alps.json')
-# postings = doc.items_for("http://alps.io/schema.org/BlogPosting#BlogPosting")
-# doc.items_for('text')
-# users = doc.items_for('http://alps.io/schema.org/Person#Person')
-#
-# doc = Semdoc::Alps::Document.load('file:///Users/tkawa/Projects/alps-sample/public/timeline.json')
-# doc.apply_profile('file:///Users/tkawa/Projects/alps-sample/public/status-alps.json')
-#
-# doc = Semdoc::Alps::Document.load('http://localhost:3000/timeline.json')
-# doc.apply_profile('http://localhost:3000/status-alps.json')
-#
-# doc = Semdoc::Alps::Document.load('https://api.github.com/users/tkawa/followers')
-# doc.apply_profile('http://localhost:3000/github-user-alps.json')
-# users = doc.items_for("http://alps.io/schema.org/Person#Person")
-# u1_doc = users.first.link_for("http://alps.io/iana/relations#self")
-# u1 = u1_doc.item_for("http://alps.io/schema.org/Person#Person")
