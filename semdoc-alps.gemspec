@@ -23,6 +23,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'faraday_middleware'
   spec.add_dependency 'faraday-http-cache'
   spec.add_dependency 'multi_xml'
+  spec.add_dependency 'halibut'
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "rake"
 end

@@ -2,7 +2,7 @@ module Semdoc
   module Alps
     class LinkedPoint
       def initialize(url, origin_descriptor)
-        @url = url
+        @url = url.respond_to?(:url) ? url.url : url.to_s
         @origin = origin_descriptor
       end
 
