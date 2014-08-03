@@ -38,7 +38,7 @@ module Semdoc
         end
 
         def items_for(descriptor_fqid, include_obj = true)
-          descriptor = DescriptorStore.lookup(complete_fqid(descriptor_fqid))
+          descriptor = lookup_descriptor(descriptor_fqid)
           traverse(@data, descriptor, include_obj).compact
         end
 
@@ -49,7 +49,7 @@ module Semdoc
 
         def links_for(descriptor_fqid)
           # semanticとlinkを分ける必要あるかもしれないけど、呼ぶまでどちらかわからないのだからやっぱり統合すべきかも
-          descriptor = DescriptorStore.lookup(complete_fqid(descriptor_fqid)) # TODO: complete_fqid はデフォルトでIANAを補完
+          descriptor = lookup_descriptor(descriptor_fqid)
           items = traverse(@data, descriptor, false).compact
           items.map{|item| item.respond_to?(:descriptor) ? LinkedPoint.new(item, item.descriptor) : item }
         end
@@ -81,10 +81,10 @@ module Semdoc
             when Hash
               traverse_values = node.slice(*fqids).map do |fqid, value|
                 if include_obj
-                  wrap(value, DescriptorStore.lookup(complete_fqid(fqid)))
+                  wrap(value, lookup_descriptor(fqid))
                 elsif !(value.is_a?(Array) || value.is_a?(Hash))
                   # value
-                  wrap(value, DescriptorStore.lookup(complete_fqid(fqid)))
+                  wrap(value, lookup_descriptor(fqid))
                 else
                   nil
                 end
@@ -102,10 +102,10 @@ module Semdoc
 
           def traversing_fqids(descriptor)
             fqids = descriptor.self_and_descendant_fqids
+            local_ids = fqids.map{|fqid| fqid.match(/^#{@url}#/).try(:post_match) }.compact
             # 構造を考慮して候補から除く部分。ここがないと子要素全部取る
             possible_fqids = possible_descriptors.map(&:self_and_ancestor_fqids).flatten(1)
             fqids &= possible_fqids
-            local_ids = fqids.map{|fqid| fqid.match(/^#{@url}#/).try(:post_match) }.compact
             fqids.concat(local_ids)
           end
 
@@ -122,13 +122,25 @@ module Semdoc
             end
           end
 
+          def leaf_fqid?(fqid)
+            !fqid.include?('#') # TODO: alias名のときの処理
+          end
+
           def complete_fqid(fqid)
-            if !fqid.include?('#') # TODO: alias名のときの処理
+            if leaf_fqid?(fqid)
               "#{url}##{fqid}"
             elsif fqid.start_with?('#')
               "#{url}#{fqid}"
             else
               fqid
+            end
+          end
+
+          def lookup_descriptor(fqid)
+            if leaf_fqid?(fqid)
+              DescriptorStore.lookup_leaf(complete_fqid(fqid))
+            else
+              DescriptorStore.lookup(complete_fqid(fqid)) # TODO: complete_fqid はデフォルトでIANAを補完
             end
           end
 

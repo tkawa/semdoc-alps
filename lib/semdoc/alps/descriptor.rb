@@ -73,5 +73,9 @@ module Semdoc
         "#<#{self.class}:#{__id__} #{variables_inspect}>"
       end
     end
+
+    class OrphanedLeafDescriptor < Descriptor
+      # TODO: 操作の際、Orphanedになっていないdescriptorがあれば探して差し替える
+    end
   end
 end

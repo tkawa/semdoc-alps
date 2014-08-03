@@ -6,7 +6,7 @@ module Semdoc
           # should be `link_for('self')`
           self_data = @data.data_collection.find{|data| data.rel == 'self' }
           self_url = self_data.url ? resolve_alps_url(self_data.url) : @url
-          self.class.new(self_data, self_url)
+          self.class.new(self_data, self_url, self_data.name)
         end
 
         def profile_urls
@@ -49,14 +49,16 @@ module Semdoc
           # end
 
           def wrap(data, name_or_rel)
-            descriptor = DescriptorStore.lookup(complete_fqid(name_or_rel))
+            descriptor = lookup_descriptor(name_or_rel)
             if data.value
               value = data.value.dup
               value.extend(ValueWithDescriptor) # TODO: improve
               value.descriptor = descriptor
               value
             else # data itself
-              self.class.new(data, data.url || @url, descriptor)
+              data_url = data.url ? resolve_alps_url(data.url) : @url
+              data_descriptor = data.name ? lookup_descriptor(data.name) : descriptor # nameを優先する
+              self.class.new(data, data_url, data_descriptor)
             end
           end
       end

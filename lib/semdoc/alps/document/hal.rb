@@ -8,17 +8,17 @@ module Semdoc
             fqids = traversing_fqids(descriptor)
 
             traversed_values = resource.properties.slice(*fqids).map do |fqid, value|
-              wrap(value, DescriptorStore.lookup(complete_fqid(fqid)))
+              wrap(value, lookup_descriptor(fqid))
             end.flatten(1).compact
             link_fqids = resource.links.instance_variable_get(:@relations).keys & fqids
             traversed_links = link_fqids.map do |fqid|
               links = resource.links[fqid]
-              wrap(links, DescriptorStore.lookup(complete_fqid(fqid)))
+              wrap(links, lookup_descriptor(fqid))
             end.flatten(1).compact
             embedded_resource_fqids = resource.embedded.instance_variable_get(:@relations).keys & fqids
             traversed_embedded_resources = embedded_resource_fqids.map do |fqid|
               embedded_resources = resource.embedded[fqid]
-              wrap(embedded_resources, DescriptorStore.lookup(complete_fqid(fqid)))
+              wrap(embedded_resources, lookup_descriptor(fqid))
             end.flatten(1).compact
 
             traversed_values + traversed_links + traversed_embedded_resources

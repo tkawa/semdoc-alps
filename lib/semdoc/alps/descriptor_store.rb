@@ -30,6 +30,12 @@ module Semdoc
         end.compact
       end
 
+      def self.lookup_leaf(fqid)
+        return @@store[fqid] if @@store[fqid]
+        namespace, fragment = fqid.split('#')
+        OrphanedLeafDescriptor.new(namespace: namespace, short_id: fragment)
+      end
+
       def self.add(descriptor)
         if @@store[descriptor.fqid]
           puts "Already registered: #{descriptor.fqid}"
