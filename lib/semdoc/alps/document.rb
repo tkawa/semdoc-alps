@@ -5,8 +5,15 @@ require 'semdoc/alps/document/uber'
 module Semdoc
   module Alps
     module Document
+      MIME_TYPE = {
+        json:     'application/json',
+        haljson:  'application/hal+json',
+        halxml:   'application/hal+xml',
+        uberjson: 'application/vnd.amundsen-uber+json'
+      }.freeze
+
       def self.load(url, supposed_mime_type = :json)
-        body = DescriptorStore.fetch_document(url)
+        body = DescriptorStore.fetch_document(url, accept: MIME_TYPE[supposed_mime_type])
         # TODO: Linkヘッダからprofileを適用
         case supposed_mime_type
         when :json

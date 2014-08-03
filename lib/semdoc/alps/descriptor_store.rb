@@ -135,7 +135,7 @@ module Semdoc
         parse(document_url)
       end
 
-      def self.fetch_document(url)
+      def self.fetch_document(url, accept: nil)
         uri = URI.parse(url)
         case uri.scheme
         when 'file'
@@ -147,7 +147,8 @@ module Semdoc
             MultiXml::Parse(doc)
           end
         when 'http', 'https'
-          response = @@connection.get(url)
+          accept_header = {'Accept' => accept} if accept
+          response = @@connection.get(url, nil, accept_header)
           response.body
         else
           raise "URL #{url} not supported"
