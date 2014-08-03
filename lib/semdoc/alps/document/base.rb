@@ -2,19 +2,27 @@ module Semdoc
   module Alps
     module Document
       class Base
-        attr_reader :data, :url, :origin_descriptor, :profile_urls
+        attr_reader :data, :url, :origin_descriptor, :applied_profile_urls
 
         def initialize(data, url, origin_descriptor = nil)
           @data = data
-          @url = url
+          @url = url # absolute URL
           @origin_descriptor = origin_descriptor # TODO: 複数個の可能性も
           @possible_descriptors = []
-          @profile_urls = []
+          @applied_profile_urls = []
+          profile_urls.each do |profile_url|
+            apply_profile(profile_url)
+          end
+        end
+
+        def profile_urls
+          # should override
+          []
         end
 
         def apply_profile(profile_url, as_root: false)
           profile_url = resolve_alps_url(profile_url)
-          puts "Already applied: #{profile_url}" and return if @profile_urls.include?(profile_url)
+          puts "Already applied: #{profile_url}" and return if @applied_profile_urls.include?(profile_url)
           puts "Apply#{' as root' if as_root}: #{profile_url}"
           if alps = DescriptorStore.parse(profile_url)
             Array.wrap(alps['descriptor']).each do |data_descriptor|
@@ -26,7 +34,7 @@ module Semdoc
               end
             end
           end
-          @profile_urls << profile_url # TODO: 実はprofile_urlの保存よりも、適用済みdescriptorのfqidsを保存すべき
+          @applied_profile_urls << profile_url # TODO: 実はprofile_urlの保存よりも、適用済みdescriptorのfqidsを保存すべき
         end
 
         def items_for(descriptor_fqid, include_obj = true)

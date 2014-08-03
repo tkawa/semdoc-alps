@@ -1,5 +1,6 @@
 require 'semdoc/alps/document/base'
 require 'semdoc/alps/document/hal'
+require 'semdoc/alps/document/uber'
 
 module Semdoc
   module Alps
@@ -11,10 +12,10 @@ module Semdoc
         when :json
           body = { 'root' => body } # plain JSON向け対処
           self::Base.new(body, url)
-        when :jsonhal, :xmlhal
+        when :haljson, :halxml
           json = MultiJson.dump(body) # FIXME: 手抜き
           resource = Halibut::Adapter::JSON.parse(json)
-          self::Hal.new(resource, url).tap do |doc|
+          self::Hal.new(resource, url).tap do |doc| # TODO: better to apply in initializer
             if links = resource.links['profile']
               links.each do |link|
                 doc.apply_profile(link.href)
@@ -27,6 +28,9 @@ module Semdoc
               end
             end
           end
+        when :uberjson
+          uber = Uberous::Loader.new(body).uber
+          self::Uber.new(uber, url)
         else
           raise NotImplementedError, supposed_mime_type
         end
